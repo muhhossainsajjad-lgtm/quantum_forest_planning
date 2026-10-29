@@ -1,8 +1,8 @@
 import json, numpy as np, matplotlib
 matplotlib.use('Agg'); import matplotlib.pyplot as plt
 import os
-DATA = os.environ.get('DATA_DIR', os.path.dirname(os.path.abspath(__file__))) + '/'
-OUT = os.environ.get('OUT_DIR', os.path.dirname(os.path.abspath(__file__))) + '/'
+DATA = os.environ.get('DATA_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'results', 'data')) + '/'
+OUT = os.environ.get('OUT_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'results', 'figures')) + '/'
 os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 9})
 BLUE, ORANGE, AQUA, YELLOW, MAG, GREEN, VIOLET = '#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7'

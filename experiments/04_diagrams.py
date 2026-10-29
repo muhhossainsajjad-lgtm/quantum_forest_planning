@@ -3,7 +3,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, Circle, FancyArrowPatch
 import os
-OUT = os.environ.get('OUT_DIR', os.path.dirname(os.path.abspath(__file__))) + '/'
+OUT = os.environ.get('OUT_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'results', 'figures')) + '/'
 os.makedirs(OUT, exist_ok=True)
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 9})
 BLUE, ORANGE, AQUA, YELLOW, MAG, GREEN, VIOLET, RED = '#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'

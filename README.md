@@ -1,4 +1,4 @@
-# quantum-forest-planning
+# quantum_forest_planning
 
 Code, synthetic-data generators and results for the report
 **“Quantum Computing Across the Latvian Forest Management Pipeline”**
@@ -27,25 +27,23 @@ random seeds, so no external data are needed.
 ### Option 1 — Google Colab (no installation)
 
 1. Open <https://colab.research.google.com> and choose **File → Upload notebook**.
-2. Upload `Quantum_Forest_Experiments.ipynb` from this repository.
+2. Upload `notebook/Quantum_Forest_Experiments.ipynb`.
 3. Click **Runtime → Run all** (about 4–5 minutes).
 
 The notebook is a shorter version of the full experiments, with explanations.
 
 ### Option 2 — run the full experiments locally
 
-Requires Python 3.10 or newer. All files are in the top-level folder; the
-scripts read and write their results (`.json`) and figures (`.png`) in that
-same folder.
+Requires Python 3.10 or newer.
 
 ```bash
-git clone https://github.com/muhhossainsajjad-lgtm/quantum-forest-planning.git
-cd quantum-forest-planning
+git clone https://github.com/muhhossainsajjad-lgtm/quantum_forest_planning.git
+cd quantum_forest_planning
 pip install -r requirements.txt
 bash run_all.sh            # full run, about 35–40 minutes on a laptop
 ```
 
-Or run the steps one by one:
+Or run the steps one by one (from the `experiments/` folder):
 
 ```bash
 python 01_single_forest_study.py   # ~7 min
@@ -57,25 +55,30 @@ python 03_analyze.py               # summary statistics + result figures
 python 04_diagrams.py              # concept diagrams
 ```
 
-Steps A–D are independent and can run in parallel. Re-running overwrites the
-reference results in the folder; copy them first if you want to compare, or
-set `DATA_DIR` / `OUT_DIR` to write elsewhere.
+Steps A–D are independent and can run in parallel. Outputs go to
+`results/data/` (JSON) and `results/figures/` (PNG). Set `DATA_DIR` or
+`OUT_DIR` to write elsewhere.
 
 ---
 
-## Files
+## Repository structure
 
-| File | Purpose |
-|---|---|
-| `01_single_forest_study.py` | 14-stand forest: exact, simulated annealing, QAOA p=1–4, penalty sweep, coupling growth, Qiskit cross-check |
-| `02_benchmarks.py` | Parts A–D (see table below) |
-| `03_analyze.py` | Summary statistics (`summary.json`) and result figures |
-| `04_diagrams.py` | Concept diagrams used in the report |
-| `Quantum_Forest_Experiments.ipynb` | Google Colab version with explanations |
-| `forest_lab.html` | Interactive browser demo (download and open in any browser) |
-| `results.json`, `exp2_A–D.json`, `summary.json` | Reference results used in the report |
-| `d_*.png`, `f_*.png`, `fig_*.png` | Figures used in the report |
-| `requirements.txt`, `run_all.sh`, `LICENSE`, `CITATION.cff` | Set-up, full run, licence, citation |
+```
+experiments/
+  01_single_forest_study.py   14-stand forest: exact, simulated annealing, QAOA p=1–4,
+                              penalty sweep, coupling growth, Qiskit cross-check
+  02_benchmarks.py            parts A–D (see table below)
+  03_analyze.py               summary statistics (summary.json) and result figures
+  04_diagrams.py              concept diagrams used in the report
+notebook/
+  Quantum_Forest_Experiments.ipynb   Colab version with explanations
+demo/
+  forest_lab.html             interactive browser demo (open the file in any browser)
+results/
+  data/                       reference outputs used in the report (JSON)
+  figures/                    figures used in the report (PNG)
+requirements.txt, run_all.sh, LICENSE, CITATION.cff
+```
 
 ## Where each result in the report comes from
 
@@ -131,7 +134,7 @@ simulated-annealing run and a QAOA execution have very different costs.
 - **Deterministic quality results.** All random choices use fixed seeds.
   Re-running the scripts reproduces every plan, success ratio and
   approximation ratio exactly. This was checked by re-running parts A, C and D
-  from a clean copy and comparing with the reference `.json` files.
+  from a clean copy and comparing with `results/data/`.
 - **Small numerical variation in script 01.** The QAOA optimisation on the
   14-qubit forest can follow a slightly different path between runs because
   of floating-point rounding in multi-threaded linear algebra. In a test

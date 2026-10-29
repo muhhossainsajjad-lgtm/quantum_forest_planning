@@ -1,0 +1,172 @@
+{
+ "B": [
+  {
+   "n": 10,
+   "model": "adjacency only",
+   "time": 0.006670691666689284,
+   "max_time": 0.007175790000019333,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 10,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 0.004538007999978315,
+   "max_time": 0.008979863999911686,
+   "solved": 0.0,
+   "gap": null
+  },
+  {
+   "n": 10,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 0.004549101999979636,
+   "max_time": 0.009634544000050482,
+   "solved": 0.0,
+   "gap": null
+  },
+  {
+   "n": 15,
+   "model": "adjacency only",
+   "time": 0.006453987333316036,
+   "max_time": 0.006813615000055506,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 15,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 0.04916180666668879,
+   "max_time": 0.0721307200000183,
+   "solved": 0.6666666666666666,
+   "gap": 0.0
+  },
+  {
+   "n": 15,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 0.012146701666627754,
+   "max_time": 0.024352778999968905,
+   "solved": 0.3333333333333333,
+   "gap": 0.0
+  },
+  {
+   "n": 20,
+   "model": "adjacency only",
+   "time": 0.007765184333341797,
+   "max_time": 0.009081584000000475,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 20,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 13.917319963000068,
+   "max_time": 17.116940962000058,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 20,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 7.3524331533333225,
+   "max_time": 10.26275216800002,
+   "solved": 1.0,
+   "gap": 3.232446446456173e-08
+  },
+  {
+   "n": 25,
+   "model": "adjacency only",
+   "time": 0.008016323333284467,
+   "max_time": 0.009260527999913393,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 25,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 30.00657137933331,
+   "max_time": 30.007467400999985,
+   "solved": 0.0,
+   "gap": 0.0033067173552629235
+  },
+  {
+   "n": 25,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 30.007402126333357,
+   "max_time": 30.00879627400002,
+   "solved": 0.0,
+   "gap": 0.004055379947210764
+  },
+  {
+   "n": 50,
+   "model": "adjacency only",
+   "time": 0.02870245866665755,
+   "max_time": 0.03566652400002113,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 50,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 30.007477145333343,
+   "max_time": 30.008407404999957,
+   "solved": 0.0,
+   "gap": 0.0008580863346310663
+  },
+  {
+   "n": 50,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 30.00555374399998,
+   "max_time": 30.00643997599991,
+   "solved": 0.0,
+   "gap": 0.0007596633371865418
+  },
+  {
+   "n": 100,
+   "model": "adjacency only",
+   "time": 0.038556979999990894,
+   "max_time": 0.0486332749999292,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 100,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 30.007429322000007,
+   "max_time": 30.008067841000184,
+   "solved": 0.0,
+   "gap": 0.0004059804776925391
+  },
+  {
+   "n": 100,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 30.01067784933336,
+   "max_time": 30.019796301000042,
+   "solved": 0.0,
+   "gap": 0.000489498357823482
+  },
+  {
+   "n": 200,
+   "model": "adjacency only",
+   "time": 0.06627621266663179,
+   "max_time": 0.12373878499988678,
+   "solved": 1.0,
+   "gap": 0.0
+  },
+  {
+   "n": 200,
+   "model": "adjacency + even flow \u00b110%",
+   "time": 30.015129847000026,
+   "max_time": 30.022393576000013,
+   "solved": 0.0,
+   "gap": 0.0003205105112373674
+  },
+  {
+   "n": 200,
+   "model": "adjacency + even flow \u00b15%",
+   "time": 30.012658554,
+   "max_time": 30.014418047999925,
+   "solved": 0.0,
+   "gap": 0.0003693990677999105
+  }
+ ]
+}

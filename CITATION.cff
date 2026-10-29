@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the report."
+title: "quantum-forest-planning: experiments for 'Quantum Computing Across the Latvian Forest Management Pipeline'"
+authors:
+  - family-names: Hossain
+    given-names: Muhammad Sajjad
+    affiliation: University of Latvia
+date-released: 2026-10-29
+version: "5.0"
+license: MIT

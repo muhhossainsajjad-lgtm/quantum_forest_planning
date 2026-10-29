@@ -12,8 +12,8 @@ from scipy.sparse.linalg import expm_multiply
 
 import os
 _HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.environ.get('DATA_DIR', _HERE) + '/'
-FIGS = os.environ.get('OUT_DIR', _HERE) + '/'
+DATA = os.environ.get('DATA_DIR', os.path.join(_HERE, '..', 'results', 'data')) + '/'
+FIGS = os.environ.get('OUT_DIR', os.path.join(_HERE, '..', 'results', 'figures')) + '/'
 os.makedirs(DATA, exist_ok=True); os.makedirs(FIGS, exist_ok=True)
 OUT = DATA
 RES = {}

@@ -1,0 +1,311 @@
+<title>Forest Stand Selection Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a working bench — controls + forest map on the left, live results on the right; scale evidence and business reading below. */
+:root{
+  --bg:#f2f4ef; --panel:#ffffff; --ink:#18201a; --ink2:#4b5649; --line:#d5dbd0;
+  --spruce:#2f5530; --harvest:#d4691f; --qaoa:#2a78d6; --ryd:#5b48c2; --classic:#1a8f68; --muted:#8a9487;
+  --ok:#1e7a3c; --warn:#a86400;
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --body:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111711; --panel:#1a221a; --ink:#e7ece4; --ink2:#a9b4a6; --line:#2f3a2e;
+  --spruce:#8cc28a; --harvest:#f0884a; --qaoa:#5b9cf0; --ryd:#9b8bf0; --classic:#3fc493; --muted:#7b8778;
+  --ok:#5cc97c; --warn:#e5a440; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111711; --panel:#1a221a; --ink:#e7ece4; --ink2:#a9b4a6; --line:#2f3a2e;
+  --spruce:#8cc28a; --harvest:#f0884a; --qaoa:#5b9cf0; --ryd:#9b8bf0; --classic:#3fc493; --muted:#7b8778;
+  --ok:#5cc97c; --warn:#e5a440; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:28px 48px;display:flex;flex-direction:column;gap:28px}
+header{display:flex;flex-direction:column;gap:8px;max-width:72ch}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--spruce)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,4vw,42px);line-height:1.05;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:21px;margin:0;text-wrap:balance}
+h3{font-size:13px;font-weight:600;margin:0;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+p{margin:0}
+.lede{color:var(--ink2);font-size:16px}
+.bench{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px}
+@media (max-width:860px){.bench{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+@media (max-width:480px){.controls{grid-template-columns:minmax(0,1fr)}}
+label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink2)}
+label b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+input[type=range]{accent-color:var(--spruce);width:100%}
+select{font:inherit;font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+button{font:inherit;font-weight:600;font-size:14px;padding:9px 16px;border-radius:7px;border:1px solid var(--spruce);cursor:pointer}
+button.primary{background:var(--spruce);color:var(--panel)}
+button.ghost{background:transparent;color:var(--spruce)}
+button:disabled{opacity:.55;cursor:progress}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--harvest);outline-offset:2px}
+.map{width:100%;aspect-ratio:1/0.82;max-width:100%}
+.map svg{width:100%;height:100%;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.status{font-family:var(--mono);font-size:12.5px;color:var(--ink2);min-height:1.5em}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th{font-weight:600;text-align:right;color:var(--ink2);font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--mono);font-size:13px;white-space:nowrap}
+td:first-child{font-family:var(--body);font-size:13.5px}
+tr.sel td{background:color-mix(in srgb,var(--harvest) 9%,transparent)}
+tbody tr{cursor:pointer}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+.bar{position:relative;height:6px;border-radius:3px;background:var(--line);margin-top:3px;overflow:hidden}
+.bar span{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.note{font-size:13px;color:var(--ink2)}
+.verdict{border-left:3px solid var(--harvest);padding:4px 0 4px 12px;font-size:14.5px}
+.scale{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.scale{grid-template-columns:minmax(0,1fr)}}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--ink2);font-family:var(--mono);font-size:10px}
+.biz{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.biz{grid-template-columns:minmax(0,1fr)}}
+.biz .panel p{font-size:14px;color:var(--ink2)}
+.biz strong{color:var(--ink)}
+.kv{font-family:var(--display);font-size:28px;font-weight:700;color:var(--spruce);line-height:1}
+footer{font-size:12.5px;color:var(--muted);max-width:90ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">DatZD028 · Quantum software use case · Latvian forests</span>
+    <h1>Forest Stand Selection Lab</h1>
+    <p class="lede">Pick which stands to harvest this period so that no two neighbouring stands are clear-cut together, and harvest as much timber as possible. Every method below solves the same forest live in your browser — three classical methods and two simulated quantum methods.</p>
+  </header>
+
+  <section class="bench">
+    <div class="panel">
+      <div class="controls">
+        <label for="n">Stands <b id="nv">12</b><input id="n" type="range" min="8" max="12" value="12"></label>
+        <label for="pen">QUBO penalty weight <b id="penv">1.0</b><input id="pen" type="range" min="0.5" max="3" step="0.25" value="1"></label>
+        <label for="depth">QAOA depth (layers)
+          <select id="depth"><option value="1">p = 1</option><option value="2" selected>p = 2</option><option value="3">p = 3</option></select></label>
+        <label for="sweep">Rydberg sweep time
+          <select id="sweep"><option value="5">short (T = 5)</option><option value="20" selected>medium (T = 20)</option><option value="60">long (T = 60)</option></select></label>
+      </div>
+      <div class="btns">
+        <button id="run" class="primary">Solve this forest</button>
+        <button id="new" class="ghost">New random forest</button>
+      </div>
+      <div class="map" id="map" aria-label="Forest map"></div>
+      <div class="legend">
+        <span><i style="background:var(--harvest)"></i>Harvest (selected method)</span>
+        <span><i style="background:transparent;border:2px solid var(--spruce)"></i>Exact optimum</span>
+        <span>Circle size = timber volume · line = shared border</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results on this forest</h2>
+      <div class="status" id="status">Example forest loaded. Press “Solve this forest”.</div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Method</th><th>Valid plans</th><th>Exact optimum</th><th>Best of 1,024</th><th>Time</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="note">Click a row to show that method’s most likely plan on the map. “Valid plans” = share of outputs with no neighbouring stands cut together. “Exact optimum” = share of outputs that are the best possible plan. Quantum methods are simulated exactly on your device; real hardware adds noise.</p>
+      <p class="verdict" id="verdict">—</p>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>What happens at real scale</h2>
+    <p class="lede" style="max-width:80ch">Measured in this project. Single-period selection stays easy for classical solvers even at 1,000 stands. Adding the even-flow rule (steady timber supply to mills across five periods) makes exact solving hard after a few dozen stands — this is where future quantum methods would have to help.</p>
+    <div class="scale">
+      <div class="panel chart"><h3>Exact solver time</h3><div id="c1"></div><p class="note">Five periods, three random forests per size, 30 s limit.</p></div>
+      <div class="panel chart"><h3>QUBO couplings</h3><div id="c2"></div><p class="note">Sparse adjacency vs dense even flow, five periods.</p></div>
+      <div class="panel chart"><h3>Success over 20 forests</h3><div id="c3"></div><p class="note">Mean share of outputs that are the exact optimum, 12 stands.</p></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <h2>Reading this as a business case</h2>
+    <div class="biz">
+      <div class="panel"><span class="kv">Today</span><p><strong>Classical solvers win on small and single-period problems.</strong> Quantum methods in this lab find valid, good plans, but simulated annealing and an exact solver are faster and better at this size.</p></div>
+      <div class="panel"><span class="kv">The gap</span><p><strong>Multi-period planning with even flow is hard.</strong> The exact solver could not prove the optimum for 25 stands within 30 s. Real districts have thousands of stands, which is why planners split problems and accept approximations.</p></div>
+      <div class="panel"><span class="kv">The bet</span><p><strong>A small pilot buys readiness, not savings.</strong> Formulations, benchmarks and skills built now pay off first through quantum-inspired solvers, and later on quantum hardware if it scales. 1% better planning on LVM revenue is worth about €5.9 m a year.</p></div>
+    </div>
+  </section>
+
+  <footer>Muhammad Sajjad Hossain, University of Latvia, 2026. Scale figures come from this project’s experiments (exact MILP solver HiGHS, Python). Revenue figure: LVM net revenue €586.1 m in 2024 (State Audit Office report via LSM, May 2026); the 1% improvement is an illustrative assumption, not a measured saving.</footer>
+</div>
+
+<script>window.SCALE_DATA={"b_adj": [[20, 0.0078], [25, 0.008], [50, 0.0287], [100, 0.0386], [200, 0.0663]], "b_flow": [[20, 13.9173], [25, 30.0066], [50, 30.0075], [100, 30.0074], [200, 30.0151]], "cpl_sparse": [[50, 980], [100, 2015], [200, 4305], [500, 10870], [1000, 21805], [3000, 67490]], "cpl_dense": [[50, 6125], [100, 24750], [200, 99500], [500, 623750], [1000, 2497500], [3000, 22492500]], "succ": [["Random", 0.000244140625, "--muted"], ["QAOA p=4", 0.05840241539902746, "--qaoa"], ["Rydberg T=20", 0.27801853654668235, "--ryd"], ["Rydberg T=60", 0.6239577477280586, "--ryd"], ["Greedy", 0.6, "--classic"], ["Sim. annealing", 0.635, "--classic"]]};</script>
+<script>
+(function(){
+'use strict';
+// ---------- seeded RNG ----------
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const $=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let F=null, seed=7, results={}, shown='Exact (all plans checked)';
+
+function makeForest(n,s){
+  const r=mulberry(s*7919+n);
+  for(let tries=0;tries<500;tries++){
+    const pts=[];for(let i=0;i<n;i++)pts.push([r(),r()]);
+    const rad=Math.sqrt(4.2/(Math.PI*n))*1.05, E=[];
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const dx=pts[i][0]-pts[j][0],dy=pts[i][1]-pts[j][1];if(dx*dx+dy*dy<rad*rad)E.push([i,j]);}
+    const deg=2*E.length/n; if(deg<2.6||deg>5)continue;
+    // connected?
+    const adj=Array.from({length:n},()=>[]);E.forEach(([a,b])=>{adj[a].push(b);adj[b].push(a)});
+    const seen=new Set([0]),st=[0];while(st.length){const v=st.pop();adj[v].forEach(u=>{if(!seen.has(u)){seen.add(u);st.push(u)}})}
+    if(seen.size<n)continue;
+    const vol=pts.map(()=>Math.round(50+250*r()));const mx=Math.max(...vol);
+    return {n,pts,E,adj,vol,w:vol.map(v=>v/mx)};
+  }
+}
+
+// ---------- shared evaluation ----------
+function prep(f,P){
+  const N=f.n,M=1<<N,val=new Float64Array(M),pen=new Uint8Array(M);
+  for(let k=0;k<M;k++){let v=0;for(let i=0;i<N;i++)if(k>>i&1)v+=f.w[i];val[k]=v;let c=0;for(const[a,b]of f.E)if((k>>a&1)&&(k>>b&1))c++;pen[k]=c;}
+  let opt=-1,optk=0;for(let k=0;k<M;k++)if(pen[k]===0&&val[k]>opt){opt=val[k];optk=k;}
+  const cd=new Float64Array(M);for(let k=0;k<M;k++)cd[k]=-val[k]+P*pen[k];
+  return {M,val,pen,opt,optk,cd};
+}
+function summarize(pr,E){ // probability vector over bitstrings
+  let feas=0,opt=0;const M=pr.length;for(let k=0;k<M;k++){if(E.pen[k]===0){feas+=pr[k];if(Math.abs(E.val[k]-E.opt)<1e-9)opt+=pr[k];}}
+  // best of 1024 samples (expected via sampling)
+  const r=mulberry(99),cum=new Float64Array(M);let s=0;for(let k=0;k<M;k++){s+=pr[k];cum[k]=s;}
+  let best=0;for(let t=0;t<1024;t++){const u=r()*s;let lo=0,hi=M-1;while(lo<hi){const m=lo+hi>>1;if(cum[m]<u)lo=m+1;else hi=m}if(E.pen[lo]===0&&E.val[lo]>best)best=E.val[lo];}
+  let mk=0;for(let k=0;k<M;k++)if(pr[k]>pr[mk])mk=k;
+  // most likely VALID plan for display
+  let mv=-1;for(let k=0;k<M;k++)if(E.pen[k]===0&&(mv<0||pr[k]>pr[mv]))mv=k;
+  return {feas,opt,best:best/E.opt,plan:mv};
+}
+
+// ---------- classical ----------
+function greedy(f){const order=[...Array(f.n).keys()].sort((a,b)=>f.w[b]/(f.adj[b].length+1)-f.w[a]/(f.adj[a].length+1));const blocked=new Set();let k=0;for(const i of order){if(!blocked.has(i)){k|=1<<i;blocked.add(i);f.adj[i].forEach(j=>blocked.add(j))}}return k}
+function sa(f,P,r){const n=f.n,x=new Uint8Array(n);for(let i=0;i<n;i++)x[i]=r()<.5?1:0;const sweeps=100,T0=2,T1=.01;
+  for(let s=0;s<sweeps;s++){const T=T0*Math.pow(T1/T0,s/sweeps);for(let q=0;q<n;q++){const i=Math.floor(r()*n);let nb=0;for(const j of f.adj[i])nb+=x[j];const d=(1-2*x[i])*(-f.w[i]+P*nb);if(d<0||r()<Math.exp(-d/T))x[i]^=1;}}
+  let k=0;for(let i=0;i<n;i++)if(x[i])k|=1<<i;return k}
+
+// ---------- QAOA statevector ----------
+function qaoaProbs(th,p,E,N){const M=E.M,re=new Float64Array(M).fill(1/Math.sqrt(M)),im=new Float64Array(M);
+  for(let l=0;l<p;l++){const g=th[l],b=th[p+l];
+    for(let k=0;k<M;k++){const a=-g*E.cd[k],c=Math.cos(a),s=Math.sin(a),x=re[k],y=im[k];re[k]=x*c-y*s;im[k]=x*s+y*c;}
+    const c=Math.cos(b),s=Math.sin(b);
+    for(let q=0;q<N;q++){const bit=1<<q;for(let k=0;k<M;k++){if(k&bit)continue;const k1=k|bit;const a0r=re[k],a0i=im[k],a1r=re[k1],a1i=im[k1];
+      re[k]=c*a0r+s*a1i; im[k]=c*a0i-s*a1r; re[k1]=c*a1r+s*a0i; im[k1]=c*a1i-s*a0r;}}}
+  const pr=new Float64Array(M);for(let k=0;k<M;k++)pr[k]=re[k]*re[k]+im[k]*im[k];return pr}
+function energy(th,p,E,N){const pr=qaoaProbs(th,p,E,N);let e=0;for(let k=0;k<E.M;k++)e+=pr[k]*E.cd[k];return e}
+function nelder(fn,x0,iters){const n=x0.length;let S=[x0.slice()];for(let i=0;i<n;i++){const y=x0.slice();y[i]+=.25;S.push(y)}let F=S.map(fn);
+  for(let it=0;it<iters;it++){const idx=[...F.keys()].sort((a,b)=>F[a]-F[b]);S=idx.map(i=>S[i]);F=idx.map(i=>F[i]);
+    const c=Array(n).fill(0);for(let i=0;i<n;i++)for(let j=0;j<n;j++)c[j]+=S[i][j]/n;
+    const xr=c.map((v,j)=>v+(v-S[n][j])),fr=fn(xr);
+    if(fr<F[0]){const xe=c.map((v,j)=>v+2*(v-S[n][j])),fe=fn(xe);if(fe<fr){S[n]=xe;F[n]=fe}else{S[n]=xr;F[n]=fr}}
+    else if(fr<F[n-1]){S[n]=xr;F[n]=fr}
+    else{const xc=c.map((v,j)=>v+.5*(S[n][j]-v)),fc=fn(xc);if(fc<F[n]){S[n]=xc;F[n]=fc}else{for(let i=1;i<=n;i++){S[i]=S[i].map((v,j)=>S[0][j]+.5*(v-S[0][j]));F[i]=fn(S[i])}}}}
+  let b=0;for(let i=1;i<=n;i++)if(F[i]<F[b])b=i;return {x:S[b],f:F[b]}}
+
+// ---------- Rydberg sweep in blockade subspace ----------
+function rydberg(f,E,T){const N=f.n,states=[],pos=new Map();
+  for(let k=0;k<E.M;k++)if(E.pen[k]===0){pos.set(k,states.length);states.push(k)}
+  const S=states.length,nb=states.map(k=>{const out=[];for(let i=0;i<N;i++){const t=k^(1<<i);if(pos.has(t))out.push(pos.get(t))}return out});
+  const nw=states.map(k=>E.val[k]);
+  let re=new Float64Array(S),im=new Float64Array(S);re[pos.get(0)]=1;
+  const steps=Math.max(300,Math.round(T*25)),dt=T/steps;
+  function deriv(t,r,i,dr,di){const u=t/T,Om=Math.pow(Math.sin(Math.PI*u),2),De=3*(2*u-1);
+    for(let a=0;a<S;a++){let hr=-De*nw[a]*r[a],hi=-De*nw[a]*i[a];for(const b of nb[a]){hr+=.5*Om*r[b];hi+=.5*Om*i[b]}dr[a]=hi;di[a]=-hr;}}
+  const k=[0,1,2,3].map(()=>[new Float64Array(S),new Float64Array(S)]),tr=new Float64Array(S),ti=new Float64Array(S);
+  for(let s=0;s<steps;s++){const t=s*dt;
+    deriv(t,re,im,k[0][0],k[0][1]);
+    for(let a=0;a<S;a++){tr[a]=re[a]+.5*dt*k[0][0][a];ti[a]=im[a]+.5*dt*k[0][1][a]}deriv(t+dt/2,tr,ti,k[1][0],k[1][1]);
+    for(let a=0;a<S;a++){tr[a]=re[a]+.5*dt*k[1][0][a];ti[a]=im[a]+.5*dt*k[1][1][a]}deriv(t+dt/2,tr,ti,k[2][0],k[2][1]);
+    for(let a=0;a<S;a++){tr[a]=re[a]+dt*k[2][0][a];ti[a]=im[a]+dt*k[2][1][a]}deriv(t+dt,tr,ti,k[3][0],k[3][1]);
+    for(let a=0;a<S;a++){re[a]+=dt/6*(k[0][0][a]+2*k[1][0][a]+2*k[2][0][a]+k[3][0][a]);im[a]+=dt/6*(k[0][1][a]+2*k[1][1][a]+2*k[2][1][a]+k[3][1][a])}}
+  const pr=new Float64Array(E.M);let z=0;for(let a=0;a<S;a++)z+=re[a]*re[a]+im[a]*im[a];
+  for(let a=0;a<S;a++)pr[states[a]]=(re[a]*re[a]+im[a]*im[a])/z;return pr}
+
+// ---------- drawing ----------
+function drawMap(){const f=F,W=500,H=410,pad=34;const sx=x=>pad+x*(W-2*pad),sy=y=>pad+y*(H-2*pad);
+  const res=results[shown],plan=res?res.plan:0,opt=results['Exact (all plans checked)']?results['Exact (all plans checked)'].plan:-1;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Forest with ${f.n} stands">`;
+  f.E.forEach(([a,b])=>{s+=`<line x1="${sx(f.pts[a][0])}" y1="${sy(f.pts[a][1])}" x2="${sx(f.pts[b][0])}" y2="${sy(f.pts[b][1])}" stroke="${css('--line')}" stroke-width="2"/>`});
+  f.pts.forEach((p,i)=>{const r=9+f.vol[i]/300*14,on=res&&(plan>>i&1),o=opt>=0&&(opt>>i&1);
+    if(o)s+=`<circle cx="${sx(p[0])}" cy="${sy(p[1])}" r="${r+5}" fill="none" stroke="${css('--spruce')}" stroke-width="2.5"/>`;
+    s+=`<circle cx="${sx(p[0])}" cy="${sy(p[1])}" r="${r}" fill="${on?css('--harvest'):css('--panel')}" stroke="${css('--ink2')}" stroke-width="1.2"/>`;
+    s+=`<text x="${sx(p[0])}" y="${sy(p[1])+4}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="${on?css('--panel'):css('--ink')}">${f.vol[i]}</text>`});
+  s+=`<text x="${W-pad}" y="${H-8}" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="${css('--ink2')}">numbers = m³ of timber · showing: ${shown}</text></svg>`;
+  $('map').innerHTML=s}
+const COL={'Exact':'--ink','Greedy':'--classic','Simulated annealing':'--classic','QAOA':'--qaoa','Rydberg sweep':'--ryd'};
+function pct(v){return v>=.995?'100%':v<.001&&v>0?'<0.1%':(v*100).toFixed(v<.1?1:0)+'%'}
+function drawRows(){let h='';for(const[name,r]of Object.entries(results)){const c=css(COL[name.split(' (')[0]]||COL[name]||'--ink');
+  h+=`<tr data-m="${name}" class="${name===shown?'sel':''}" tabindex="0"><td><span class="dot" style="background:${c}"></span>${name}<div class="bar"><span style="width:${(r.opt*100).toFixed(1)}%;background:${c}"></span></div></td><td>${pct(r.feas)}</td><td>${pct(r.opt)}</td><td>${r.best==null?'—':pct(r.best)}</td><td>${r.time<0.001?'<1 ms':r.time<1?(r.time*1000).toFixed(0)+' ms':r.time.toFixed(1)+' s'}</td></tr>`}
+  $('rows').innerHTML=h;
+  $('rows').querySelectorAll('tr').forEach(tr=>{const act=()=>{shown=tr.dataset.m;drawRows();drawMap()};tr.onclick=act;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}}})}
+function verdict(){const q=results['QAOA'],ry=results['Rydberg sweep'],sa=results['Simulated annealing'];if(!q)return;
+  const bestQ=Math.max(q.opt,ry.opt);const w=sa.opt>=bestQ?'Classical simulated annealing finds the optimum most reliably here.':'A simulated quantum method beat simulated annealing on this forest — try a few more forests before drawing conclusions.';
+  $('verdict').textContent=`${w} The Rydberg sweep gives valid plans ${pct(ry.feas)} of the time because the blockade enforces the neighbour rule physically; QAOA relies on the penalty weight and gives valid plans ${pct(q.feas)} of the time.`}
+
+const tick=()=>new Promise(r=>setTimeout(r,0));
+async function solve(){const btn=$('run');btn.disabled=true;$('new').disabled=true;results={};
+  const P=+$('pen').value,p=+$('depth').value,T=+$('sweep').value,f=F,N=f.n;
+  $('status').textContent='Building QUBO…';await tick();
+  let t0=performance.now();const E=prep(f,P);
+  results['Exact (all plans checked)']={feas:1,opt:1,best:1,plan:E.optk,time:(performance.now()-t0)/1000};
+  t0=performance.now();const g=greedy(f);results['Greedy']={feas:1,opt:Math.abs(E.val[g]-E.opt)<1e-9?1:0,best:E.val[g]/E.opt,plan:g,time:(performance.now()-t0)/1000};
+  t0=performance.now();const r=mulberry(seed+3);let fe=0,op=0,bestv=0,cnt=new Map();
+  for(let i=0;i<100;i++){const k=sa(f,P,r);if(E.pen[k]===0){fe++;if(Math.abs(E.val[k]-E.opt)<1e-9)op++;bestv=Math.max(bestv,E.val[k]);cnt.set(k,(cnt.get(k)||0)+1)}}
+  let mp=0,mc=-1;cnt.forEach((c,k)=>{if(c>mc){mc=c;mp=k}});
+  results['Simulated annealing']={feas:fe/100,opt:op/100,best:bestv/E.opt,plan:mp,time:(performance.now()-t0)/1000/100};
+  drawRows();
+  $('status').textContent=`Optimising QAOA (p = ${p}) on ${N} qubits…`;await tick();
+  t0=performance.now();let best=null,warm=null;const rr=mulberry(seed+11);
+  for(let d=1;d<=p;d++){let starts=[];for(let s=0;s<4;s++){const x=[];for(let i=0;i<d;i++)x.push(rr()*1.0);for(let i=0;i<d;i++)x.push(rr()*1.57);starts.push(x)}
+    if(warm){const gg=warm.slice(0,d-1),bb=warm.slice(d-1);starts.unshift([...gg,gg[gg.length-1],...bb,bb[bb.length-1]])}
+    best=null;for(const x0 of starts){const o=nelder(x=>energy(x,d,E,N),x0,140*d);if(!best||o.f<best.f)best=o;await tick()}
+    warm=best.x;$('status').textContent=`Optimising QAOA… layer ${d} of ${p} done`;}
+  const pq=qaoaProbs(best.x,p,E,N);results['QAOA']={...summarize(pq,E),time:(performance.now()-t0)/1000};drawRows();
+  $('status').textContent='Simulating Rydberg atom sweep…';await tick();
+  t0=performance.now();const pr=rydberg(f,E,T);results['Rydberg sweep']={...summarize(pr,E),time:(performance.now()-t0)/1000};
+  drawRows();drawMap();verdict();
+  $('status').textContent=`Done. ${N} stands, ${f.E.length} neighbour pairs, ${E.M.toLocaleString()} possible plans. Optimum: ${Math.round(E.opt*Math.max(...f.vol))} m³.`;
+  btn.disabled=false;$('new').disabled=false}
+
+function newForest(){F=makeForest(+$('n').value,seed);results={};shown='Exact (all plans checked)';$('rows').innerHTML='';$('verdict').textContent='—';
+  $('status').textContent=`${F.n} stands, ${F.E.length} neighbour pairs. Press “Solve this forest”.`;drawMap()}
+
+// ---------- static scale charts (data from the project's experiments) ----------
+function lineChart(el,series,opts){const W=300,H=190,L=44,R=10,T=12,B=30;
+  const xs=series.flatMap(s=>s.pts.map(p=>p[0])),ys=series.flatMap(s=>s.pts.map(p=>p[1]));
+  const lx=v=>Math.log10(v),x0=lx(Math.min(...xs)),x1=lx(Math.max(...xs)),y0=Math.floor(lx(opts.ymin)),y1=Math.ceil(lx(Math.max(...ys)));
+  const X=v=>L+(lx(v)-x0)/(x1-x0)*(W-L-R),Y=v=>T+(1-(lx(v)-y0)/(y1-y0))*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${opts.label}">`;
+  for(let e=y0;e<=y1;e++){const y=Y(Math.pow(10,e));s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${css('--line')}"/><text x="${L-6}" y="${y+3}" text-anchor="end">${opts.yfmt(Math.pow(10,e))}</text>`}
+  opts.xt.forEach(v=>{s+=`<text x="${X(v)}" y="${H-B+14}" text-anchor="middle">${v}</text>`});
+  s+=`<text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle">${opts.xlab}</text>`;
+  series.forEach(se=>{const c=css(se.c);s+=`<polyline fill="none" stroke="${c}" stroke-width="2" points="${se.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`;
+    se.pts.forEach(p=>{s+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5" fill="${c}" stroke="${css('--panel')}" stroke-width="1.5"><title>${se.name}: ${p[0]} → ${opts.yfmt(p[1])}</title></circle>`});
+    const last=se.pts[se.pts.length-1];s+=`<text x="${X(last[0])-4}" y="${Y(last[1])-8}" text-anchor="end" style="fill:${c}">${se.name}</text>`});
+  el.innerHTML=s+'</svg>'}
+const SCALE=window.SCALE_DATA;
+function drawScale(){const D=SCALE;
+  lineChart($('c1'),[{name:'adjacency only',c:'--qaoa',pts:D.b_adj},{name:'+ even flow ±10%',c:'--harvest',pts:D.b_flow}],
+    {ymin:0.001,yfmt:v=>v>=1?Math.round(v)+' s':Math.round(v*1000)+' ms',xt:D.b_adj.map(p=>p[0]),xlab:'stands',label:'Exact solver time'});
+  lineChart($('c2'),[{name:'sparse',c:'--qaoa',pts:D.cpl_sparse},{name:'even flow',c:'--harvest',pts:D.cpl_dense}],
+    {ymin:100,yfmt:v=>v>=1e6?Math.round(v/1e6)+'M':v>=1e3?Math.round(v/1e3)+'k':Math.round(v),xt:[50,200,1000,3000],xlab:'stands',label:'QUBO couplings'});
+  const el=$('c3'),W=300,H=190,L=104,R=34;let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Success over 20 forests">`;
+  D.succ.forEach((d,i)=>{const y=10+i*22,w=(W-L-R)*d[1];s+=`<text x="${L-6}" y="${y+11}" text-anchor="end">${d[0]}</text><rect x="${L}" y="${y+2}" width="${Math.max(w,1.5)}" height="12" rx="3" fill="${css(d[2])}"/><text x="${L+w+4}" y="${y+12}">${(d[1]*100).toFixed(d[1]<.1?1:0)}%</text>`});
+  el.innerHTML=s+'</svg>'}
+
+$('n').oninput=e=>{$('nv').textContent=e.target.value;newForest()};
+$('pen').oninput=e=>{$('penv').textContent=(+e.target.value).toFixed(2).replace(/0$/,'')};
+$('new').onclick=()=>{seed++;newForest()};$('run').onclick=solve;
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{drawMap();drawRows();drawScale()});
+new MutationObserver(()=>{drawMap();drawRows();drawScale()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+newForest();drawScale();
+})();
+</script>
